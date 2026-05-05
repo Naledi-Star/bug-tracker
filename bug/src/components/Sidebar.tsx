@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { cn } from '../lib/utils';
-import { Home, FolderOpen, Bug, Settings, LogOut } from 'lucide-react';
+import { Home, FolderOpen, Bug, Settings, LogOut, Menu, X } from 'lucide-react';
+import './sidebar.css';
 
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Close sidebar on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const navigationItems = [
     { name: "Home", id: "home", path: "/", icon: Home },
@@ -16,50 +45,82 @@ export const Sidebar: React.FC = () => {
 
   const handleNavigation = (path: string, id: string) => {
     if (id === 'logout') {
-      
       console.log('Logout clicked');
+      setIsOpen(false);
       return;
     }
     navigate(path);
+    setIsOpen(false);
   };
 
   return (
-    <nav className="h-full bg-gradient-to-b from-blue-600 to-blue-800 rounded-lg shadow-lg m-4">
-      <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-white text-2xl font-bold">Bug Tracker</h1>
+    <>
+      {/* Mobile toggle button */}
+      <button
+        className="sidebar-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+      >
+        {isOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
+
+      {/* Overlay */}
+      <div
+        className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Sidebar */}
+      <nav className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-container">
+          <div className="sidebar-brand">
+            <h1>Bug Tracker</h1>
+          </div>
+
+          <div className="sidebar-nav">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleNavigation(item.path, item.id)}
+                  className={`sidebar-item ${isActive ? 'active' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleNavigation(item.path, item.id);
+                    }
+                  }}
+                >
+                  <Icon className="sidebar-item-icon" />
+                  <span className="sidebar-item-label">{item.name}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div
+            onClick={() => handleNavigation('/', 'logout')}
+            className="sidebar-logout"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleNavigation('/', 'logout');
+              }
+            }}
+          >
+            <LogOut className="sidebar-logout-icon" />
+            <span className="sidebar-logout-label">Logout</span>
+          </div>
         </div>
-        
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <div
-              key={item.id}
-              onClick={() => handleNavigation(item.path, item.id)}
-              className={cn(
-                "flex items-center px-6 py-4 mb-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-500/20",
-                isActive
-                  ? "bg-blue-200 text-blue-900 font-bold shadow-md"
-                  : "text-white hover:text-blue-100"
-              )}
-            >
-              <Icon className="w-5 h-5 mr-3" />
-              <span className="text-lg">{item.name}</span>
-            </div>
-          );
-        })}
-        
-        {/* Logout Button */}
-        <div
-          onClick={() => handleNavigation('/', 'logout')}
-          className="flex items-center px-6 py-4 mb-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-red-500/20 text-white hover:text-red-100 mt-8"
-        >
-          <LogOut className="w-5 h-5 mr-3" />
-          <span className="text-lg">Logout</span>
-        </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };

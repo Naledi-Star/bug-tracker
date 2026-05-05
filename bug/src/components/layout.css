@@ -1,0 +1,59 @@
+.layout {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #f9fafb;
+}
+
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.layout-sidebar {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+  background: white;
+  position: relative;
+  z-index: 1;
+}
+
+.layout-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.layout-content-inner {
+  padding: clamp(16px, 3vw, 24px);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .layout-sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+}
+
+/* Mobile - sidebar becomes overlay */
+@media (max-width: 768px) {
+  .layout-sidebar {
+    width: 0;
+    min-width: 0;
+    overflow: visible;
+  }
+  
+  .layout-content {
+    width: 100%;
+  }
+  
+  .layout-content-inner {
+    padding: 16px;
+    padding-top: 64px;
+  }
+}
