@@ -26,7 +26,7 @@ export const DefectsCard: React.FC<DefectsCardProps> = ({
   const getSeverityClass = (severity: string) => {
     return `defect-severity-${severity}`;
   };
-
+//
   return (
     <div className="defects-card">
       <div className="defects-card-header">
