@@ -1,32 +1,35 @@
+/* Project Card - dark theme */
 .project-card {
   width: 100%;
-  background: white;
-  border-radius: clamp(16px, 2vw, 24px);
-  border: 2px solid #60a5fa;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  background: #1a1a2e;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
 
 .project-card-header {
-  background: #dbeafe;
-  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 16px);
+  background: rgba(99, 102, 241, 0.08);
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .project-card-title {
-  font-size: clamp(16px, 2vw, 18px);
-  font-weight: 600;
-  color: black;
+  font-size: 14px;
+  font-weight: 700;
+  color: #E2E8F0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .project-card-body {
-  padding: clamp(16px, 3vw, 24px);
+  padding: 20px 24px;
 }
 
 .project-card-layout {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: clamp(16px, 3vw, 32px);
+  gap: 32px;
 }
 
 .project-list {
@@ -37,21 +40,22 @@
 .project-list-items {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
-  margin-bottom: clamp(16px, 2vw, 24px);
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .project-item {
-  padding: clamp(12px, 2vw, 16px);
-  background: white;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .project-item:hover {
-  border-color: #60a5fa;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .project-item-header {
@@ -63,39 +67,31 @@
 }
 
 .project-item-name {
-  color: black;
-  font-weight: 500;
-  font-size: clamp(14px, 1.5vw, 16px);
+  color: #E2E8F0;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .project-item-description {
-  font-size: clamp(12px, 1.2vw, 14px);
-  color: #4b5563;
+  font-size: 12px;
+  color: #6B7280;
   margin-top: 4px;
+  line-height: 1.5;
 }
 
 .project-status-active {
-  background: #22c55e;
-  color: white;
-  font-size: clamp(10px, 1vw, 12px);
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #86EFAC;
 }
 
 .project-status-completed {
-  background: #3b82f6;
-  color: white;
-  font-size: clamp(10px, 1vw, 12px);
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #A5B4FC;
 }
 
 .project-status-maintenance {
-  background: #eab308;
-  color: white;
-  font-size: clamp(10px, 1vw, 12px);
-  padding: 2px 8px;
-  border-radius: 4px;
+  background: rgba(250, 204, 21, 0.15);
+  color: #FDE047;
 }
 
 .project-pagination {
@@ -113,54 +109,66 @@
 }
 
 .project-pagination-btn {
-  padding: 4px;
+  padding: 6px;
   background: transparent;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   display: flex;
   align-items: center;
+  border-radius: 6px;
+  color: #9CA3AF;
+  transition: all 0.15s ease;
+}
+
+.project-pagination-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #F8FAFC;
 }
 
 .project-pagination-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .project-pagination-btn svg {
-  width: clamp(20px, 2vw, 24px);
-  height: clamp(20px, 2vw, 24px);
+  width: 18px;
+  height: 18px;
 }
 
 .project-pagination-number {
-  width: clamp(28px, 3vw, 32px);
-  height: clamp(28px, 3vw, 32px);
-  border: 1px solid black;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  font-size: clamp(12px, 1.2vw, 14px);
-  font-weight: 500;
+  background: rgba(99, 102, 241, 0.15);
+  font-size: 12px;
+  font-weight: 600;
+  color: #A5B4FC;
+  border-radius: 6px;
 }
 
 .project-add-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: transparent;
   border: none;
-  color: black;
+  color: #818CF8;
   cursor: pointer;
-  font-size: clamp(14px, 1.5vw, 16px);
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.15s ease;
 }
 
 .project-add-btn:hover {
-  color: #2563eb;
+  color: #A5B4FC;
 }
 
 .project-add-btn svg {
-  width: clamp(20px, 2vw, 24px);
-  height: clamp(20px, 2vw, 24px);
+  width: 18px;
+  height: 18px;
 }
 
 .project-profile {
@@ -170,51 +178,58 @@
 }
 
 .project-profile-avatar {
-  width: clamp(64px, 8vw, 96px);
-  height: clamp(64px, 8vw, 96px);
-  border: 2px solid #60a5fa;
-  margin-bottom: clamp(8px, 1vw, 12px);
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  margin-bottom: 12px;
 }
 
 .project-profile-avatar .avatar-fallback {
-  background: white;
-  color: #2563eb;
-  font-size: clamp(16px, 2vw, 24px);
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  color: white;
+  font-size: 20px;
   font-weight: 700;
 }
 
 .project-profile-name {
-  color: black;
-  font-weight: 500;
-  margin-bottom: clamp(12px, 1.5vw, 16px);
-  font-size: clamp(14px, 1.5vw, 16px);
+  color: #E2E8F0;
+  font-weight: 600;
+  margin-bottom: 16px;
+  font-size: 14px;
 }
 
 .project-new-defect-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #3b82f6;
-  background: transparent;
-  color: black;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.08);
+  color: #A5B4FC;
   cursor: pointer;
-  padding: clamp(6px, 1vw, 8px) clamp(12px, 1.5vw, 16px);
-  border-radius: 6px;
-  font-size: clamp(13px, 1.3vw, 14px);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
   white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .project-new-defect-btn:hover {
-  background: #eff6ff;
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
 .project-defect-count {
-  background: #ef4444;
+  background: rgba(239, 68, 68, 0.8);
   color: white;
   border-radius: 50%;
-  padding: 2px 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  font-size: clamp(10px, 1vw, 12px);
+  font-size: 11px;
 }
 
 /* Tablet */
@@ -245,7 +260,7 @@
 /* Mobile */
 @media (max-width: 640px) {
   .project-card {
-    border-radius: 16px;
+    border-radius: 12px;
   }
   
   .project-card-layout {
@@ -266,7 +281,7 @@
     width: 100%;
     justify-content: center;
     padding: 8px;
-    border: 1px solid #bfdbfe;
+    border: 1px solid rgba(99, 102, 241, 0.2);
     border-radius: 8px;
   }
   

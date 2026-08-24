@@ -1,204 +1,153 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Search, Plus, Filter, Bug } from 'lucide-react';
+import { Search, Plus, X, Bug } from 'lucide-react';
 import { mockDefects } from '../data/mockData';
-import { Defect } from '../types';
 
 export const DefectsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
-  const [defects] = useState<Defect[]>(mockDefects);
 
-  const filteredDefects = defects.filter(defect => {
+  const filteredDefects = mockDefects.filter(defect => {
     const matchesSearch = defect.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         defect.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         defect.projectName.toLowerCase().includes(searchTerm.toLowerCase());
+      defect.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      defect.projectName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || defect.status === statusFilter;
     const matchesSeverity = severityFilter === 'all' || defect.severity === severityFilter;
-    
     return matchesSearch && matchesStatus && matchesSeverity;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-500';
-      case 'assigned': return 'bg-yellow-500';
-      case 'in-progress': return 'bg-orange-500';
-      case 'resolved': return 'bg-green-500';
-      case 'closed': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
+  const getStatusStyle = (status: string): React.CSSProperties => {
+    const s: Record<string, React.CSSProperties> = {
+      'new': { background: 'rgba(99,102,241,0.15)', color: '#A5B4FC' },
+      'assigned': { background: 'rgba(250,204,21,0.15)', color: '#FDE047' },
+      'in-progress': { background: 'rgba(249,115,22,0.15)', color: '#FDBA74' },
+      'in-review': { background: 'rgba(168,85,247,0.15)', color: '#D8B4FE' },
+      'resolved': { background: 'rgba(34,197,94,0.15)', color: '#86EFAC' },
+      'closed': { background: 'rgba(100,116,139,0.2)', color: '#9CA3AF' },
+      'needs-info': { background: 'rgba(239,68,68,0.15)', color: '#FCA5A5' },
+    };
+    return { fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, whiteSpace: 'nowrap' as const, ...s[status] };
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'low': return 'bg-green-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'high': return 'bg-orange-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const getSeverityStyle = (severity: string): React.CSSProperties => {
+    const s: Record<string, React.CSSProperties> = {
+      'low': { background: 'rgba(34,197,94,0.15)', color: '#86EFAC' },
+      'medium': { background: 'rgba(250,204,21,0.15)', color: '#FDE047' },
+      'high': { background: 'rgba(249,115,22,0.15)', color: '#FDBA74' },
+      'critical': { background: 'rgba(239,68,68,0.15)', color: '#FCA5A5' },
+    };
+    return { fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, ...s[severity] };
   };
+
+  const hasFilters = searchTerm || statusFilter !== 'all' || severityFilter !== 'all';
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Defects</h1>
-          <p className="text-gray-600">Track and manage all reported defects across projects</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#F8FAFC', letterSpacing: '-0.03em' }}>Defects</h1>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Track and manage all reported defects across projects</p>
         </div>
-        <Button 
-          onClick={() => navigate('/defects/new')}
-          className="bg-red-600 hover:bg-red-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Report Defect
+        <Button onClick={() => navigate('/defects/new')}>
+          <Plus className="w-4 h-4" /> Report Defect
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search defects..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="new">New</option>
-              <option value="assigned">Assigned</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
-
-            {/* Severity Filter */}
-            <select
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Severity</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-
-            {/* Clear Filters */}
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchTerm('');
-                setStatusFilter('all');
-                setSeverityFilter('all');
-              }}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Clear Filters
-            </Button>
+      <div style={{ background: '#1a1a2e', borderRadius: 14, border: '1px solid rgba(255,255,255,0.06)', padding: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#4B5563', width: 16, height: 16 }} />
+            <input
+              type="text"
+              placeholder="Search defects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '8px 12px 8px 34px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, fontSize: 13, color: '#F8FAFC', outline: 'none', boxSizing: 'border-box' }}
+            />
           </div>
-        </CardContent>
-      </Card>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, fontSize: 13, color: '#F8FAFC', outline: 'none' }}
+          >
+            <option value="all">All Status</option>
+            <option value="new">New</option>
+            <option value="assigned">Assigned</option>
+            <option value="in-progress">In Progress</option>
+            <option value="in-review">In Review</option>
+            <option value="needs-info">Needs Info</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select
+            value={severityFilter}
+            onChange={(e) => setSeverityFilter(e.target.value)}
+            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, fontSize: 13, color: '#F8FAFC', outline: 'none' }}
+          >
+            <option value="all">All Severity</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+          {hasFilters && (
+            <button
+              onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSeverityFilter('all'); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px', fontSize: 13, color: '#9CA3AF', background: 'transparent', border: 'none', borderRadius: 8, cursor: 'pointer' }}
+            >
+              <X size={14} />
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
 
-      {/* Defects Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Defects ({filteredDefects.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div style={{ background: '#1a1a2e', borderRadius: 14, border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '20px 24px 0' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#F8FAFC' }}>All Defects ({filteredDefects.length})</h2>
+        </div>
+        <div style={{ padding: 20 }}>
           {filteredDefects.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%' }}>
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Title</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Project</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Severity</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Assignee</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Reporter</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Created</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    {['Title', 'Project', 'Status', 'Severity', 'Assignee', 'Reporter', 'Created'].map(h => (
+                      <th key={h} style={{ textAlign: 'left', padding: '10px 12px', fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredDefects.map((defect) => (
-                    <tr 
-                      key={defect.id} 
-                      className="border-b hover:bg-gray-50 cursor-pointer"
+                    <tr
+                      key={defect.id}
                       onClick={() => navigate(`/defects/${defect.id}`)}
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer' }}
                     >
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="font-medium text-gray-900">{defect.title}</p>
-                          <p className="text-sm text-gray-600 line-clamp-1">{defect.description}</p>
-                        </div>
+                      <td style={{ padding: '12px' }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#E2E8F0' }}>{defect.title}</p>
+                        <p style={{ fontSize: 11.5, color: '#6B7280', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>{defect.description}</p>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="text-blue-600 hover:text-blue-800 cursor-pointer">
-                          {defect.projectName}
-                        </span>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ fontSize: 13, color: '#818CF8', fontWeight: 600 }}>{defect.projectName}</span>
                       </td>
-                      <td className="py-4 px-4">
-                        <Badge className={`${getStatusColor(defect.status)} text-white`}>
-                          {defect.status.replace('-', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={`${getSeverityColor(defect.severity)} text-white`}>
-                          {defect.severity}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
+                      <td style={{ padding: '12px' }}><span style={getStatusStyle(defect.status)}>{defect.status.replace('-', ' ')}</span></td>
+                      <td style={{ padding: '12px' }}><span style={getSeverityStyle(defect.severity)}>{defect.severity}</span></td>
+                      <td style={{ padding: '12px' }}>
                         {defect.assigneeName ? (
-                          <span className="text-gray-900">{defect.assigneeName}</span>
+                          <span style={{ fontSize: 13, color: '#CBD5E1' }}>{defect.assigneeName}</span>
                         ) : (
-                          <Badge variant="outline" className="text-blue-600 border-blue-600">
-                            Unassigned
-                          </Badge>
+                          <span style={{ fontSize: 11.5, fontWeight: 600, color: '#6B7280', background: 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: 4 }}>Unassigned</span>
                         )}
                       </td>
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="text-gray-900">{defect.reporterName}</p>
-                          <p className="text-sm text-gray-600">{defect.reporterEmail}</p>
-                        </div>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ fontSize: 13, color: '#CBD5E1' }}>{defect.reporterName}</span>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">
+                      <td style={{ padding: '12px', fontSize: 13, color: '#6B7280' }}>
                         {defect.createdAt.toLocaleDateString('en-GB')}
-                      </td>
-                      <td className="py-4 px-4">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/defects/${defect.id}`);
-                          }}
-                        >
-                          View
-                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -206,25 +155,19 @@ export const DefectsPage: React.FC = () => {
               </table>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Bug className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No defects found</h3>
-              <p className="text-gray-600 mb-4">
-                {searchTerm || statusFilter !== 'all' || severityFilter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria' 
-                  : 'No defects have been reported yet'}
+            <div style={{ textAlign: 'center', padding: 48 }}>
+              <Bug size={36} color="#4B5563" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: '#E2E8F0', marginBottom: 4 }}>No defects found</h3>
+              <p style={{ fontSize: 11.5, color: '#6B7280', marginBottom: 16 }}>
+                {hasFilters ? 'Try adjusting your search or filter criteria' : 'No defects have been reported yet'}
               </p>
-              <Button 
-                onClick={() => navigate('/defects/new')}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Report First Defect
+              <Button onClick={() => navigate('/defects/new')} size="sm">
+                <Plus className="w-3.5 h-3.5" /> Report Defect
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

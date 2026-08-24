@@ -4,22 +4,23 @@
   justify-content: center;
   gap: 8px;
   white-space: nowrap;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: colors 0.2s ease;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
   cursor: pointer;
   border: none;
+  letter-spacing: -0.01em;
 }
 
 .button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--ring, #3b82f6);
+  box-shadow: 0 0 0 2px #0B1120, 0 0 0 4px #6366F1;
 }
 
 .button:disabled {
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.35;
 }
 
 .button svg {
@@ -31,58 +32,75 @@
 
 /* Variants */
 .button-default {
-  background: var(--primary, #3b82f6);
-  color: var(--primary-foreground, white);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  background: #6366F1;
+  color: white;
 }
 
 .button-default:hover {
-  background: rgba(59, 130, 246, 0.9);
+  background: #5558E6;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .button-destructive {
-  background: var(--destructive, #ef4444);
-  color: var(--destructive-foreground, white);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background: #EF4444;
+  color: white;
 }
 
 .button-destructive:hover {
-  background: rgba(239, 68, 68, 0.9);
+  background: #DC2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 .button-outline {
-  border: 1px solid var(--input, #e2e8f0);
-  background: var(--background, white);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #CBD5E1;
 }
 
 .button-outline:hover {
-  background: var(--accent, #e2e8f0);
-  color: var(--accent-foreground, #1e293b);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #F8FAFC;
 }
 
 .button-secondary {
-  background: var(--secondary, #64748b);
-  color: var(--secondary-foreground, white);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background: rgba(30, 30, 50, 0.8);
+  color: #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .button-secondary:hover {
-  background: rgba(100, 116, 139, 0.8);
+  background: rgba(40, 40, 60, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.button-ghost {
+  color: #9CA3AF;
 }
 
 .button-ghost:hover {
-  background: var(--accent, #e2e8f0);
-  color: var(--accent-foreground, #1e293b);
+  background: rgba(255, 255, 255, 0.05);
+  color: #F8FAFC;
 }
 
 .button-link {
-  color: var(--primary, #3b82f6);
+  color: #818CF8;
   text-underline-offset: 4px;
 }
 
 .button-link:hover {
   text-decoration: underline;
+}
+
+/* Green accent variant for "Resolved" / action buttons from images */
+.button-success {
+  background: #22C55E;
+  color: white;
+}
+
+.button-success:hover {
+  background: #16A34A;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 /* Sizes */
@@ -93,15 +111,16 @@
 
 .button-size-sm {
   height: 32px;
-  border-radius: 6px;
-  padding: 0 12px;
-  font-size: 12px;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 12.5px;
 }
 
 .button-size-lg {
-  height: 40px;
-  border-radius: 6px;
-  padding: 0 32px;
+  height: 42px;
+  border-radius: 10px;
+  padding: 0 28px;
+  font-size: 14px;
 }
 
 .button-size-icon {

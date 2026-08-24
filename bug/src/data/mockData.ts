@@ -1,137 +1,70 @@
-import { User, Project, Defect } from '../types';
+// Unified mock data: BugTracker richness + bug compatibility
+export type BugStatus = 'open' | 'in-progress' | 'under-review' | 'resolved' | 'closed' | 'reopened';
+export type Priority = 'low' | 'medium' | 'high' | 'critical';
+export type Severity = 'minor' | 'major' | 'severe' | 'blocker';
+export type Role = 'manager' | 'developer' | 'tester';
+export interface Member { id: string; name: string; email: string; role: Role; avatar: string; activeBugs: number; completedBugs: number; projects: string[]; status: 'online' | 'offline' | 'away'; workload: number; }
+export interface Project { id: string; name: string; description: string; status: 'active' | 'on-hold' | 'completed'; teamSize: number; openBugs: number; criticalBugs: number; resolvedBugs: number; inProgressBugs: number; health: number; createdAt: string; color: string; }
+export interface Bug { id: string; title: string; description: string; steps: string[]; expected: string; actual: string; status: BugStatus; priority: Priority; severity: Severity; projectId: string; projectName: string; reporterId: string; reporterName: string; assigneeId: string | null; assigneeName: string | null; labels: string[]; createdAt: string; updatedAt: string; dueDate: string | null; environment: { device: string; os: string; browser: string; version: string }; comments: BugComment[]; activity: Activity[]; screenshot?: string; }
+export interface BugComment { id: string; authorId: string; authorName: string; authorRole: Role; content: string; createdAt: string; }
+export interface Activity { id: string; userId: string; userName: string; action: string; detail?: string; timestamp: string; }
+export interface Message { id: string; senderId: string; senderName: string; content: string; timestamp: string; read: boolean; }
+export interface Channel { id: string; name: string; type: 'project' | 'team' | 'direct'; members: string[]; unread: number; messages: Message[]; }
+export interface Company { id: string; name: string; logo?: string; }
+export interface LegacyUser { id: string; name: string; email: string; phone?: string; avatar?: string; role: 'admin' | 'developer' | 'tester' | 'manager' | 'user'; companyId: string; }
+export interface LegacyProject { id: string; name: string; description: string; createdAt: Date; members: LegacyUser[]; status: 'active' | 'completed' | 'on-hold'; companyId: string; defectCount?: number; }
+export interface LegacyComment { id: string; defectId: string; userId: string; userName: string; userRole: string; content: string; createdAt: Date; type: 'comment' | 'status-change' | 'assignment' | 'info-request'; }
+export interface Defect { id: string; title: string; description: string; projectId: string; projectName: string; severity: 'low' | 'medium' | 'high' | 'critical'; status: 'new' | 'assigned' | 'in-progress' | 'in-review' | 'resolved' | 'closed' | 'needs-info'; assigneeId?: string; assigneeName?: string; reporterId: string; reporterName: string; reporterEmail: string; reporterPhone?: string; createdAt: Date; updatedAt: Date; screenshot?: string; comments?: LegacyComment[]; }
 
-export const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'N. Galeragwe',
-    email: 'n.galeragwe@galeragwe.co.bw',
-    role: 'manager'
-  },
-  {
-    id: '2',
-    name: 'Nale Nale',
-    email: 'nale.nale@galeragwe.co.bw',
-    role: 'developer'
-  },
-  {
-    id: '3',
-    name: 'Star Gale',
-    email: 'star.gale@galeragwe.co.bw',
-    role: 'tester'
-  },
-  {
-    id: '4',
-    name: 'Mike Gale',
-    email: 'mike@galeragwe.co.bw',
-    role: 'developer'
-  }
+export const currentUser: Member = { id: 'u1', name: 'Alex Serame', email: 'alex@stargaze.com', role: 'manager', avatar: 'AS', activeBugs: 0, completedBugs: 34, projects: ['p1','p2','p3','p4'], status: 'online', workload: 40 };
+
+export const members: Member[] = [
+  currentUser,
+  { id: 'u2', name: 'Sarah Thusego', email: 'sarah@stargaze.com', role: 'tester', avatar: 'ST', activeBugs: 8, completedBugs: 42, projects: ['p1','p2'], status: 'online', workload: 80 },
+  { id: 'u3', name: 'Boi Mmane', email: 'boi@stargaze.com', role: 'developer', avatar: 'BM', activeBugs: 5, completedBugs: 67, projects: ['p1','p3'], status: 'away', workload: 65 },
+  { id: 'u4', name: 'Boago Mosupi', email: 'boago@stargaze.com', role: 'developer', avatar: 'BK', activeBugs: 7, completedBugs: 51, projects: ['p1','p2','p4'], status: 'online', workload: 90 },
+  { id: 'u5', name: 'Wame Rekae', email: 'wame@stargaze.com', role: 'tester', avatar: 'WR', activeBugs: 6, completedBugs: 38, projects: ['p2','p3'], status: 'offline', workload: 55 },
+  { id: 'u6', name: 'Marcus Kelentse', email: 'marcus@stargaze.com', role: 'developer', avatar: 'MK', activeBugs: 4, completedBugs: 29, projects: ['p3','p4'], status: 'online', workload: 45 },
+  { id: 'u7', name: 'Sethunya Thata', email: 'sethunya@stargaze.com', role: 'tester', avatar: 'ST2', activeBugs: 9, completedBugs: 55, projects: ['p1','p4'], status: 'online', workload: 95 },
 ];
 
-export const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'E-Commerce Platform',
-    description: 'Online shopping platform with payment integration',
-    createdAt: new Date('2024-01-15'),
-    members: [mockUsers[0], mockUsers[1], mockUsers[2]],
-    status: 'active'
-  },
-  {
-    id: '2',
-    name: 'Mobile Banking App',
-    description: 'Secure mobile banking application',
-    createdAt: new Date('2024-02-21'),
-    members: [mockUsers[0], mockUsers[3]],
-    status: 'active'
-  },
-  {
-    id: '3',
-    name: 'CRM System',
-    description: 'Customer relationship management system',
-    createdAt: new Date('2024-01-20'),
-    members: [mockUsers[1], mockUsers[2], mockUsers[3]],
-    status: 'on-hold'
-  }
+export const projects: Project[] = [
+  { id: 'p1', name: 'E-Commerce Platform', description: 'Customer-facing online store with cart, checkout and payment systems', status: 'active', teamSize: 6, openBugs: 34, criticalBugs: 8, resolvedBugs: 76, inProgressBugs: 12, health: 64, createdAt: '2024-01-15', color: '#5c6ef8' },
+  { id: 'p2', name: 'Mobile Banking App', description: 'iOS and Android banking application with biometric auth', status: 'active', teamSize: 4, openBugs: 21, criticalBugs: 4, resolvedBugs: 43, inProgressBugs: 7, health: 78, createdAt: '2024-02-20', color: '#3dd68c' },
+  { id: 'p3', name: 'Customer Portal', description: 'Self-service portal for account management and support', status: 'active', teamSize: 3, openBugs: 14, criticalBugs: 2, resolvedBugs: 58, inProgressBugs: 5, health: 82, createdAt: '2024-03-10', color: '#9b7cf4' },
+  { id: 'p4', name: 'Internal HR System', description: 'Employee management, payroll, and performance reviews', status: 'on-hold', teamSize: 2, openBugs: 9, criticalBugs: 1, resolvedBugs: 31, inProgressBugs: 3, health: 88, createdAt: '2024-04-05', color: '#e5a435' },
 ];
 
-export const mockDefects: Defect[] = [
-  {
-    id: '1',
-    title: 'Unable to assign user roles',
-    description: 'When trying to assign roles to users, the system throws an error and does not save the changes.',
-    projectId: '1',
-    projectName: 'E-Commerce Platform',
-    severity: 'high',
-    status: 'assigned',
-    assigneeId: '2',
-    assigneeName: 'Nale Nale',
-    reporterId: '3',
-    reporterName: 'Star Gale',
-    reporterEmail: 'star.gale@galeragwe.co.bw',
-    createdAt: new Date('2024-02-02'),
-    updatedAt: new Date('2024-02-12'),
-    screenshot: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800'
-  },
-  {
-    id: '2',
-    title: 'Cannot add screenshot to defect',
-    description: 'The file upload functionality for screenshots is not working properly.',
-    projectId: '1',
-    projectName: 'E-Commerce Platform',
-    severity: 'medium',
-    status: 'in-progress',
-    assigneeId: '1',
-    assigneeName: 'N. Galeragwe',
-    reporterId: '2',
-    reporterName: 'Nale Nale',
-    reporterEmail: 'nale.nale@galeragwe.co.bw',
-    createdAt: new Date('2024-12-02'),
-    updatedAt: new Date('2024-12-03')
-  },
-  {
-    id: '3',
-    title: 'Error when adding new defect',
-    description: 'Application crashes when trying to create a new defect entry.',
-    projectId: '2',
-    projectName: 'Mobile Banking App',
-    severity: 'critical',
-    status: 'new',
-    reporterId: '3',
-    reporterName: 'Star Gale',
-    reporterEmail: 'star.gale@galeragwe.co.bw',
-    createdAt: new Date('2024-12-03'),
-    updatedAt: new Date('2024-12-03')
-  },
-  {
-    id: '4',
-    title: 'Login page not responsive',
-    description: 'The login page does not display correctly on mobile devices.',
-    projectId: '2',
-    projectName: 'Mobile Banking App',
-    severity: 'medium',
-    status: 'assigned',
-    assigneeId: '4',
-    assigneeName: 'Mike Gale',
-    reporterId: '1',
-    reporterName: 'N. Galeragwe',
-    reporterEmail: 'n.galeragwe@galeragwe.co.bw',
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2024-12-02')
-  },
-  {
-    id: '5',
-    title: 'Database connection timeout',
-    description: 'Intermittent database connection timeouts causing application errors.',
-    projectId: '3',
-    projectName: 'CRM System',
-    severity: 'high',
-    status: 'resolved',
-    assigneeId: '2',
-    assigneeName: 'Nale Nale',
-    reporterId: '4',
-    reporterName: 'Mike Gale',
-    reporterEmail: 'mike@galeragwe.co.bw',
-    createdAt: new Date('2024-11-28'),
-    updatedAt: new Date('2024-12-01')
-  }
+export const bugs: Bug[] = [
+  { id: 'BUG-1042', title: 'Checkout crashes when applying discount code', description: 'Unhandled exception during discount code application in checkout.', steps: ['Navigate to cart', 'Proceed to checkout', 'Enter discount code', 'Click Apply'], expected: 'Discount applied', actual: '500 error', status: 'in-progress', priority: 'critical', severity: 'blocker', projectId: 'p1', projectName: 'E-Commerce Platform', reporterId: 'u2', reporterName: 'Sarah Thusego', assigneeId: 'u3', assigneeName: 'Boi Mmane', labels: ['Payment', 'Backend'], createdAt: '2025-08-20T10:42:00Z', updatedAt: '2025-08-20T15:45:00Z', dueDate: '2025-08-25', environment: { device: 'Desktop', os: 'Windows 11', browser: 'Chrome 126', version: '3.4.1' }, comments: [{ id: 'c1', authorId: 'u2', authorName: 'Sarah Thusego', authorRole: 'tester', content: 'Reproduced on Android 14 too.', createdAt: '2025-08-20T11:30:00Z' }, { id: 'c2', authorId: 'u3', authorName: 'Boi Mmane', authorRole: 'developer', content: 'Found it - payment validation throws on special chars.', createdAt: '2025-08-20T13:20:00Z' }], activity: [{ id: 'a1', userId: 'u2', userName: 'Sarah Thusego', action: 'created this bug', timestamp: '2025-08-20T10:42:00Z' }, { id: 'a2', userId: 'u1', userName: 'Alex Serame', action: 'assigned to Boi Mmane', timestamp: '2025-08-20T10:47:00Z' }] },
+  { id: 'BUG-1041', title: 'Product images not loading on Safari 17', description: 'CORS misconfiguration in image CDN headers.', steps: ['Open in Safari 17'], expected: 'Images load', actual: 'Broken placeholders', status: 'open', priority: 'high', severity: 'major', projectId: 'p1', projectName: 'E-Commerce Platform', reporterId: 'u5', reporterName: 'Wame Rekae', assigneeId: 'u4', assigneeName: 'Boago Mosupi', labels: ['UI', 'Frontend'], createdAt: '2025-08-19T09:00:00Z', updatedAt: '2025-08-19T14:00:00Z', dueDate: '2025-08-26', environment: { device: 'MacBook Pro', os: 'macOS 14.5', browser: 'Safari 17.5', version: '3.4.1' }, comments: [], activity: [{ id: 'a1', userId: 'u5', userName: 'Wame Rekae', action: 'created this bug', timestamp: '2025-08-19T09:00:00Z' }] },
+  { id: 'BUG-1040', title: 'Biometric auth fails after session timeout on iOS', description: 'Face ID fails silently after session timeout.', steps: ['Log in with Face ID', 'Wait 15 min', 'Return'], expected: 'Session restored', actual: 'Face ID fails', status: 'under-review', priority: 'critical', severity: 'severe', projectId: 'p2', projectName: 'Mobile Banking App', reporterId: 'u7', reporterName: 'Sethunya Thata', assigneeId: 'u6', assigneeName: 'Marcus Kelentse', labels: ['Authentication', 'Mobile'], createdAt: '2025-08-18T14:00:00Z', updatedAt: '2025-08-20T09:00:00Z', dueDate: '2025-08-22', environment: { device: 'iPhone 15 Pro', os: 'iOS 17.5', browser: 'Native App', version: '2.1.4' }, comments: [{ id: 'c1', authorId: 'u6', authorName: 'Marcus Kelentse', authorRole: 'developer', content: 'Fix ready for review.', createdAt: '2025-08-20T08:30:00Z' }], activity: [{ id: 'a1', userId: 'u7', userName: 'Sethunya Thata', action: 'created this bug', timestamp: '2025-08-18T14:00:00Z' }] },
+  { id: 'BUG-1039', title: 'Invoice PDF tax calculation incorrect', description: 'Tax amounts on PDF invoices dont match portal UI.', steps: ['Create invoice', 'Download PDF'], expected: 'PDF matches portal', actual: 'Tax differs', status: 'resolved', priority: 'high', severity: 'major', projectId: 'p3', projectName: 'Customer Portal', reporterId: 'u2', reporterName: 'Sarah Thusego', assigneeId: 'u3', assigneeName: 'Boi Mmane', labels: ['Backend', 'Finance'], createdAt: '2025-08-15T10:00:00Z', updatedAt: '2025-08-20T11:00:00Z', dueDate: null, environment: { device: 'Desktop', os: 'Ubuntu 22.04', browser: 'Firefox 128', version: '1.9.2' }, comments: [], activity: [{ id: 'a1', userId: 'u3', userName: 'Boi Mmane', action: 'changed status to', detail: 'Resolved', timestamp: '2025-08-20T11:00:00Z' }] },
+  { id: 'BUG-1038', title: 'Payroll export fails for special characters', description: 'CSV export errors with accented characters.', steps: ['Add employee with accent', 'Export CSV'], expected: 'Clean export', actual: 'Encoding error', status: 'open', priority: 'medium', severity: 'major', projectId: 'p4', projectName: 'Internal HR System', reporterId: 'u5', reporterName: 'Wame Rekae', assigneeId: null, assigneeName: null, labels: ['Backend', 'Export'], createdAt: '2025-08-17T13:00:00Z', updatedAt: '2025-08-17T13:00:00Z', dueDate: '2025-09-01', environment: { device: 'Desktop', os: 'Windows 10', browser: 'Chrome 126', version: '1.2.0' }, comments: [], activity: [{ id: 'a1', userId: 'u5', userName: 'Wame Rekae', action: 'created this bug', timestamp: '2025-08-17T13:00:00Z' }] },
+  { id: 'BUG-1037', title: 'Transfer email sent in wrong language', description: 'Confirmation email ignores language preference.', steps: ['Set Spanish', 'Transfer'], expected: 'Spanish email', actual: 'English email', status: 'in-progress', priority: 'medium', severity: 'minor', projectId: 'p2', projectName: 'Mobile Banking App', reporterId: 'u7', reporterName: 'Sethunya Thata', assigneeId: 'u4', assigneeName: 'Boago Mosupi', labels: ['i18n', 'Email'], createdAt: '2025-08-16T08:00:00Z', updatedAt: '2025-08-19T10:00:00Z', dueDate: null, environment: { device: 'Samsung Galaxy S24', os: 'Android 14', browser: 'Native App', version: '2.1.4' }, comments: [], activity: [{ id: 'a1', userId: 'u7', userName: 'Sethunya Thata', action: 'created this bug', timestamp: '2025-08-16T08:00:00Z' }] },
+  { id: 'BUG-1036', title: 'Search returns stale results', description: 'Search index not updated in real-time.', steps: ['Update price', 'Search'], expected: 'Updated price', actual: 'Old price for 10 min', status: 'open', priority: 'low', severity: 'minor', projectId: 'p1', projectName: 'E-Commerce Platform', reporterId: 'u2', reporterName: 'Sarah Thusego', assigneeId: null, assigneeName: null, labels: ['Search', 'Performance'], createdAt: '2025-08-14T11:00:00Z', updatedAt: '2025-08-14T11:00:00Z', dueDate: null, environment: { device: 'Desktop', os: 'macOS 14', browser: 'Chrome 126', version: '3.4.1' }, comments: [], activity: [{ id: 'a1', userId: 'u2', userName: 'Sarah Thusego', action: 'created this bug', timestamp: '2025-08-14T11:00:00Z' }] },
+  { id: 'BUG-1035', title: 'Dashboard widget positions not saved', description: 'Widget positions revert on reload.', steps: ['Drag widgets', 'Refresh'], expected: 'Positions kept', actual: 'Reverted', status: 'closed', priority: 'low', severity: 'minor', projectId: 'p3', projectName: 'Customer Portal', reporterId: 'u5', reporterName: 'Wame Rekae', assigneeId: 'u6', assigneeName: 'Marcus Kelentse', labels: ['UI', 'Frontend'], createdAt: '2025-08-10T09:00:00Z', updatedAt: '2025-08-18T14:00:00Z', dueDate: null, environment: { device: 'Desktop', os: 'Windows 11', browser: 'Edge 126', version: '1.9.2' }, comments: [], activity: [{ id: 'a1', userId: 'u6', userName: 'Marcus Kelentse', action: 'changed status to', detail: 'Closed', timestamp: '2025-08-18T14:00:00Z' }] },
 ];
+
+export const channels: Channel[] = [
+  { id: 'ch1', name: 'General', type: 'team', members: ['u1','u2','u3','u4','u5','u6','u7'], unread: 3, messages: [{ id: 'm1', senderId: 'u2', senderName: 'Sarah Thusego', content: 'Fix for BUG-1039 pushed. Ready for review.', timestamp: '2025-08-20T14:30:00Z', read: false }, { id: 'm2', senderId: 'u3', senderName: 'Boi Mmane', content: 'On it - review by EOD.', timestamp: '2025-08-20T14:35:00Z', read: false }] },
+  { id: 'ch2', name: 'E-Commerce Team', type: 'project', members: ['u1','u2','u3','u4'], unread: 5, messages: [{ id: 'm1', senderId: 'u4', senderName: 'Boago Mosupi', content: 'BUG-1041 CORS needs CDN deploy.', timestamp: '2025-08-20T11:00:00Z', read: false }] },
+  { id: 'ch3', name: 'QA Team', type: 'team', members: ['u2','u5','u7'], unread: 0, messages: [{ id: 'm1', senderId: 'u5', senderName: 'Wame Rekae', content: 'Regression tests updated.', timestamp: '2025-08-19T16:00:00Z', read: true }] },
+  { id: 'ch4', name: 'Mobile Banking', type: 'project', members: ['u1','u4','u6','u7'], unread: 2, messages: [{ id: 'm1', senderId: 'u6', senderName: 'Marcus Kelentse', content: 'Biometric fix live on staging.', timestamp: '2025-08-20T09:00:00Z', read: false }] },
+];
+
+export const notifications = [
+  { id: 'n1', type: 'assignment', text: 'BUG-1042 was assigned to you', bugId: 'BUG-1042', read: false, timestamp: '2025-08-20T10:47:00Z' },
+  { id: 'n2', type: 'comment', text: 'Sarah Thusego commented on BUG-1041', bugId: 'BUG-1041', read: false, timestamp: '2025-08-20T12:30:00Z' },
+  { id: 'n3', type: 'status', text: 'BUG-1040 changed to Under Review', bugId: 'BUG-1040', read: false, timestamp: '2025-08-20T08:30:00Z' },
+  { id: 'n4', type: 'mention', text: 'Marcus mentioned you in E-Commerce Team', bugId: null, read: true, timestamp: '2025-08-19T14:00:00Z' },
+  { id: 'n5', type: 'overdue', text: 'BUG-1040 is overdue', bugId: 'BUG-1040', read: true, timestamp: '2025-08-22T09:00:00Z' },
+];
+
+export const bugsByMonth = [{ month: 'Mar', created: 8, resolved: 5 }, { month: 'Apr', created: 12, resolved: 9 }, { month: 'May', created: 7, resolved: 11 }, { month: 'Jun', created: 15, resolved: 13 }, { month: 'Jul', created: 18, resolved: 14 }, { month: 'Aug', created: 11, resolved: 8 }];
+
+// Legacy compatibility
+export const mockCompany: Company = { id: '1', name: 'Stargaze Inc' };
+export const mockUsers: LegacyUser[] = members.map(m => ({ id: m.id, name: m.name, email: m.email, phone: undefined, avatar: m.avatar, role: m.role as LegacyUser['role'], companyId: '1' }));
+export const mockProjects: LegacyProject[] = projects.map(p => ({ id: p.id, name: p.name, description: p.description, createdAt: new Date(p.createdAt), members: mockUsers.filter(u => members.find(m => m.id === u.id)?.projects.includes(p.id)), status: p.status as LegacyProject['status'], companyId: '1', defectCount: p.openBugs }));
+export const mockDefects: Defect[] = bugs.map(b => ({ id: b.id.replace('BUG-', ''), title: b.title, description: b.description, projectId: b.projectId.replace('p', ''), projectName: b.projectName, severity: (b.severity === 'blocker' ? 'critical' : b.severity === 'severe' ? 'high' : b.severity) as Defect['severity'], status: (b.status === 'under-review' ? 'in-review' : b.status === 'reopened' ? 'new' : b.status) as Defect['status'], assigneeId: b.assigneeId?.replace('u', '') || undefined, assigneeName: b.assigneeName || undefined, reporterId: b.reporterId.replace('u', ''), reporterName: b.reporterName, reporterEmail: members.find(m => m.id === b.reporterId)?.email || '', createdAt: new Date(b.createdAt), updatedAt: new Date(b.updatedAt), screenshot: b.screenshot, comments: b.comments.map(c => ({ id: c.id, defectId: b.id.replace('BUG-', ''), userId: c.authorId.replace('u', ''), userName: c.authorName, userRole: c.authorRole, content: c.content, createdAt: new Date(c.createdAt), type: 'comment' as const })) }));

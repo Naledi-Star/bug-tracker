@@ -1,3 +1,4 @@
+/* Avatar - dark theme */
 .avatar-root {
   position: relative;
   display: flex;
@@ -21,5 +22,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--muted, #f1f5f9);
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
 }

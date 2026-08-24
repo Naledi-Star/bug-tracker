@@ -1,217 +1,179 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import { ArrowLeft, Plus, Bug, Users, Calendar, Settings } from 'lucide-react';
-import { mockProjects, mockDefects, mockUsers } from '../data/mockData';
-import { Defect } from '../types';
+import { ArrowLeft, Plus, Bug, Users, Calendar, FolderOpen } from 'lucide-react';
+import { mockProjects, mockDefects } from '../data/mockData';
 
 export const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
   const project = mockProjects.find(p => p.id === id);
   const projectDefects = mockDefects.filter(d => d.projectId === id);
-  
-  const [defects] = useState<Defect[]>(projectDefects);
 
   if (!project) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Project not found</h2>
+      <div className="text-center py-16">
+        <FolderOpen style={{ width: 48, height: 48, color: "#4B5563", margin: "0 auto 12px" }} />
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: "#F8FAFC", marginBottom: 12 }}>Project not found</h2>
         <Button onClick={() => navigate('/projects')}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
           Back to Projects
         </Button>
       </div>
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-blue-500';
-      case 'assigned': return 'bg-yellow-500';
-      case 'in-progress': return 'bg-orange-500';
-      case 'resolved': return 'bg-green-500';
-      case 'closed': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
+  const getStatusStyle = (status: string): React.CSSProperties => {
+    const s: Record<string, React.CSSProperties> = {
+      'new': { background: 'rgba(99,102,241,0.15)', color: '#A5B4FC' },
+      'assigned': { background: 'rgba(250,204,21,0.15)', color: '#FDE047' },
+      'in-progress': { background: 'rgba(249,115,22,0.15)', color: '#FDBA74' },
+      'resolved': { background: 'rgba(34,197,94,0.15)', color: '#86EFAC' },
+      'closed': { background: 'rgba(100,116,139,0.2)', color: '#9CA3AF' },
+    };
+    return { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 6, ...(s[status] || s['new']) };
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'low': return 'bg-green-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'high': return 'bg-orange-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const getSeverityStyle = (severity: string): React.CSSProperties => {
+    const s: Record<string, React.CSSProperties> = {
+      'low': { background: 'rgba(34,197,94,0.15)', color: '#86EFAC' },
+      'medium': { background: 'rgba(250,204,21,0.15)', color: '#FDE047' },
+      'high': { background: 'rgba(249,115,22,0.15)', color: '#FDBA74' },
+      'critical': { background: 'rgba(239,68,68,0.15)', color: '#FCA5A5' },
+    };
+    return { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 6, ...(s[severity] || s['low']) };
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/projects')}
-            className="p-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => navigate('/projects')} style={{ padding: 8, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}>
+            <ArrowLeft style={{ width: 16, height: 16, color: "#9CA3AF" }} />
+          </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-            <p className="text-gray-600">{project.description}</p>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.03em" }}>{project.name}</h1>
+            <p style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}>{project.description}</p>
           </div>
         </div>
-        <div className="flex space-x-2">
-          <Button 
-            onClick={() => navigate(`/projects/${id}/defects/new`)}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Bug className="w-4 h-4 mr-2" />
-            Report Defect
-          </Button>
-          <Button variant="outline">
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
-        </div>
+        <Button onClick={() => navigate(`/projects/${id}/defects/new`)}>
+          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          Report Defect
+        </Button>
       </div>
 
-      {/* Project Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge className={`${project.status === 'active' ? 'bg-green-500' : project.status === 'completed' ? 'bg-blue-500' : 'bg-yellow-500'} text-white`}>
-              {project.status.replace('-', ' ')}
-            </Badge>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Created</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-              <span>{project.createdAt.toLocaleDateString('en-GB')}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Team Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2 text-gray-400" />
-              <span>{project.members.length} members</span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4">
+        <div style={{ background: "#1a1a2e", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", padding: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>Status</p>
+          <span style={{
+            ...(project.status === 'active' ? { background: 'rgba(34,197,94,0.15)', color: '#86EFAC' } :
+              project.status === 'completed' ? { background: 'rgba(99,102,241,0.15)', color: '#A5B4FC' } :
+              { background: 'rgba(250,204,21,0.15)', color: '#FDE047' }),
+            fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 6
+          }}>
+            {project.status.replace('-', ' ')}
+          </span>
+        </div>
+        <div style={{ background: "#1a1a2e", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", padding: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>Created</p>
+          <div className="flex items-center gap-1.5">
+            <Calendar size={14} style={{ color: "#4B5563" }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#CBD5E1" }}>{project.createdAt.toLocaleDateString('en-GB')}</span>
+          </div>
+        </div>
+        <div style={{ background: "#1a1a2e", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", padding: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>Team</p>
+          <div className="flex items-center gap-1.5">
+            <Users size={14} style={{ color: "#4B5563" }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#CBD5E1" }}>{project.members.length} members</span>
+          </div>
+        </div>
       </div>
 
       {/* Team Members */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Team Members</CardTitle>
+      <div style={{ background: "#1a1a2e", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex items-center justify-between p-5 pb-0">
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#F8FAFC" }}>Team Members</h2>
           <Button variant="outline" size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Member
+            <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+            Add
           </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        </div>
+        <div style={{ padding: 20 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {project.members.map((member) => (
-              <div key={member.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                <Avatar>
-                  <AvatarFallback>
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{member.name}</p>
-                  <p className="text-sm text-gray-600">{member.email}</p>
-                  <Badge variant="outline" className="text-xs">
-                    {member.role}
-                  </Badge>
+              <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 10, border: "1px solid rgba(255,255,255,0.06)", transition: "all 0.15s ease" }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: member.role === 'manager' ? '#6366F1' : member.role === 'developer' ? '#8B5CF6' : '#F59E0B',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontSize: 12, fontWeight: 600, flexShrink: 0
+                }}>
+                  {member.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#E2E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{member.name}</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{member.email}</p>
+                  <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, textTransform: 'capitalize',
+                    background: member.role === 'manager' ? '#eff6ff' : member.role === 'developer' ? '#f5f3ff' : '#fffbeb',
+                    color: member.role === 'manager' ? '#2563eb' : member.role === 'developer' ? '#7c3aed' : '#d97706'
+                  }}>{member.role}</span>
                 </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Defects */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Project Defects ({defects.length})</CardTitle>
-          <Button 
-            onClick={() => navigate(`/projects/${id}/defects/new`)}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Report Defect
+      <div style={{ background: "#1a1a2e", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex items-center justify-between p-5 pb-0">
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#F8FAFC" }}>Defects ({projectDefects.length})</h2>
+          <Button onClick={() => navigate(`/projects/${id}/defects/new`)} size="sm">
+            <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+            Report
           </Button>
-        </CardHeader>
-        <CardContent>
-          {defects.length > 0 ? (
-            <div className="space-y-4">
-              {defects.map((defect) => (
-                <div 
-                  key={defect.id} 
-                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+        </div>
+        <div style={{ padding: 20 }}>
+          {projectDefects.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {projectDefects.map((defect) => (
+                <div
+                  key={defect.id}
                   onClick={() => navigate(`/defects/${defect.id}`)}
+                  style={{ display: "flex", alignItems: "center", gap: 16, padding: 14, borderRadius: 10, border: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", transition: "all 0.15s ease" }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 mb-1">{defect.title}</h4>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{defect.description}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>Reported by {defect.reporterName}</span>
-                        <span>{defect.createdAt.toLocaleDateString('en-GB')}</span>
-                        {defect.assigneeName && (
-                          <span>Assigned to {defect.assigneeName}</span>
-                        )}
-                      </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 600, color: "#E2E8F0" }}>{defect.title}</h4>
+                    <p style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>{defect.description}</p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                      <span>{defect.reporterName}</span>
+                      <span>{defect.createdAt.toLocaleDateString('en-GB')}</span>
+                      {defect.assigneeName && <span>Assigned to {defect.assigneeName}</span>}
                     </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <Badge className={`${getStatusColor(defect.status)} text-white`}>
-                        {defect.status.replace('-', ' ')}
-                      </Badge>
-                      <Badge className={`${getSeverityColor(defect.severity)} text-white`}>
-                        {defect.severity}
-                      </Badge>
-                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+                    <span style={getStatusStyle(defect.status)}>{defect.status.replace('-', ' ')}</span>
+                    <span style={getSeverityStyle(defect.severity)}>{defect.severity}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <Bug className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No defects reported</h3>
-              <p className="text-gray-600 mb-4">This project has no defects yet.</p>
-              <Button 
-                onClick={() => navigate(`/projects/${id}/defects/new`)}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
+            <div className="text-center py-10">
+              <Bug style={{ width: 40, height: 40, color: "#4B5563", margin: "0 auto 12px" }} />
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: "#E2E8F0", marginBottom: 4 }}>No defects reported</h3>
+              <p style={{ fontSize: 11, color: "#6B7280", marginBottom: 12 }}>This project has no defects yet.</p>
+              <Button onClick={() => navigate(`/projects/${id}/defects/new`)} size="sm">
+                <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
                 Report First Defect
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
