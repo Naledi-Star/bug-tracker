@@ -29,7 +29,7 @@ export const members: Member[] = [
 ];
 
 export const projects: Project[] = [
-  { id: 'p1', name: 'E-Commerce Platform', description: 'Customer-facing online store with cart, checkout and payment systems', status: 'active', teamSize: 6, openBugs: 34, criticalBugs: 8, resolvedBugs: 76, inProgressBugs: 12, health: 64, createdAt: '2024-01-15', color: '#5c6ef8' },
+  { id: 'p1', name: 'E-Commerce Platform', description: 'Customer-facing online store with cart, checkout and payment systems', status: 'active', teamSize: 6, openBugs: 34, criticalBugs: 8, resolvedBugs: 76, inProgressBugs: 12, health: 64, createdAt: '2024-01-15', color: '#FB923C' },
   { id: 'p2', name: 'Mobile Banking App', description: 'iOS and Android banking application with biometric auth', status: 'active', teamSize: 4, openBugs: 21, criticalBugs: 4, resolvedBugs: 43, inProgressBugs: 7, health: 78, createdAt: '2024-02-20', color: '#3dd68c' },
   { id: 'p3', name: 'Customer Portal', description: 'Self-service portal for account management and support', status: 'active', teamSize: 3, openBugs: 14, criticalBugs: 2, resolvedBugs: 58, inProgressBugs: 5, health: 82, createdAt: '2024-03-10', color: '#9b7cf4' },
   { id: 'p4', name: 'Internal HR System', description: 'Employee management, payroll, and performance reviews', status: 'on-hold', teamSize: 2, openBugs: 9, criticalBugs: 1, resolvedBugs: 31, inProgressBugs: 3, health: 88, createdAt: '2024-04-05', color: '#e5a435' },

@@ -47,7 +47,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               {currentProjects.map((project) => (
                 <div
                   key={project.id}
-                  onClick={() => navigate(`/projects/${project.id}`)}
+                  onClick={() => navigate(`/dashboard/projects/${project.id}`)}
                   className="project-item"
                 >
                   <div className="project-item-header">

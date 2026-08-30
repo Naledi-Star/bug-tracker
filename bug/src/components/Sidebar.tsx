@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Bug, FolderKanban, Users,
@@ -6,23 +6,26 @@ import {
   ChevronDown, ChevronRight, Plus, LogOut, ChevronLeft
 } from 'lucide-react';
 import logo from '../assets/logo.png';
-import { currentUser, projects } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { useProjects } from '../hooks/useProjects';
 
 const navItems = [
-  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { id: 'bugs', icon: Bug, label: 'Bugs', path: '/defects' },
-  { id: 'projects', icon: FolderKanban, label: 'Projects', path: '/projects' },
-  { id: 'team', icon: Users, label: 'Team', path: '/team' },
-  { id: 'reports', icon: BarChart3, label: 'Reports', path: '/reports' },
+  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { id: 'bugs', icon: Bug, label: 'Bugs', path: '/dashboard/defects' },
+  { id: 'projects', icon: FolderKanban, label: 'Projects', path: '/dashboard/projects' },
+  { id: 'team', icon: Users, label: 'Team', path: '/dashboard/team' },
+  { id: 'reports', icon: BarChart3, label: 'Reports', path: '/dashboard/reports' },
 ];
 
-const roleColors: Record<string, string> = { manager: '#9b7cf4', developer: '#5c6ef8', tester: '#3dd68c' };
+const roleColors: Record<string, string> = { admin: '#9b7cf4', manager: '#9b7cf4', developer: '#FB923C', tester: '#3dd68c' };
 
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { profile, signOut } = useAuth();
+  const { projects } = useProjects(profile?.company_id || null);
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({ p1: true });
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
   const toggleProject = (id: string) => setExpandedProjects(p => ({ ...p, [id]: !p[id] }));
 
@@ -32,10 +35,12 @@ export function Sidebar() {
   };
 
   const isActive = (id: string) => {
-    if (id === 'dashboard') return location.pathname === '/';
+    if (id === 'dashboard') return location.pathname === '/dashboard';
     const path = navPath(id);
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
+
+  const avatar = profile?.avatar || profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
 
   return (
     <aside
@@ -63,7 +68,9 @@ export function Sidebar() {
       {/* Workspace switcher */}
       {!collapsed && (
         <div className="mx-2 mt-2 px-2 py-1.5 rounded-md cursor-pointer flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
-          <div className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold" style={{ background: '#5c6ef8', color: '#fff', fontSize: 10 }}>S</div>
+          <div className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold" style={{ background: '#FB923C', color: '#fff', fontSize: 10 }}>
+            {profile?.company_id ? 'S' : '?'}
+          </div>
           <span className="text-xs font-medium flex-1 truncate" style={{ color: '#d9dff0' }}>Stargaze Inc</span>
           <ChevronDown size={12} color="#484f6b" />
         </div>
@@ -81,8 +88,8 @@ export function Sidebar() {
 
       {/* Personal items */}
       <div className="mt-3 px-2 space-y-0.5">
-        <NavItem icon={Inbox} label="Inbox" collapsed={collapsed} active={location.pathname === '/messages'} onClick={() => navigate('/messages')} />
-        <NavItem icon={UserCheck} label="Assigned to me" collapsed={collapsed} active={false} onClick={() => navigate('/defects')} />
+        <NavItem icon={Inbox} label="Inbox" collapsed={collapsed} active={location.pathname === '/dashboard/messages'} onClick={() => navigate('/dashboard/messages')} />
+        <NavItem icon={UserCheck} label="Assigned to me" collapsed={collapsed} active={false} onClick={() => navigate('/dashboard/defects')} />
       </div>
 
       {/* Main Nav */}
@@ -91,8 +98,8 @@ export function Sidebar() {
         {navItems.map(item => (
           <NavItem key={item.id} icon={item.icon} label={item.label} collapsed={collapsed} active={isActive(item.id)} onClick={() => navigate(item.path)} />
         ))}
-        <NavItem icon={Bell} label="Notifications" collapsed={collapsed} active={location.pathname === '/notifications'} onClick={() => navigate('/notifications')} />
-        <NavItem icon={Settings} label="Settings" collapsed={collapsed} active={location.pathname === '/settings'} onClick={() => navigate('/settings')} />
+        <NavItem icon={Bell} label="Notifications" collapsed={collapsed} active={location.pathname === '/dashboard/notifications'} onClick={() => navigate('/dashboard/notifications')} />
+        <NavItem icon={Settings} label="Settings" collapsed={collapsed} active={location.pathname === '/dashboard/settings'} onClick={() => navigate('/dashboard/settings')} />
       </div>
 
       {/* Projects */}
@@ -100,19 +107,33 @@ export function Sidebar() {
         <div className="mt-4 px-2 flex-1 overflow-y-auto">
           <div className="flex items-center justify-between px-2 mb-1">
             <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#2e3450', fontSize: 10 }}>Projects</p>
-            <button className="w-5 h-5 flex items-center justify-center rounded" style={{ color: '#484f6b' }} onClick={() => navigate('/projects/new')}><Plus size={12} /></button>
+            <button className="w-5 h-5 flex items-center justify-center rounded" style={{ color: '#484f6b' }} onClick={() => navigate('/dashboard/projects/new')}><Plus size={12} /></button>
           </div>
           {projects.map(p => (
             <div key={p.id}>
-              <button className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs" style={{ color: location.pathname.includes(p.id) ? '#d9dff0' : '#7c85a2', background: location.pathname.includes(p.id) ? 'rgba(255,255,255,0.07)' : 'transparent' }} onClick={() => { toggleProject(p.id); navigate('/projects/' + p.id); }}>
+              <button
+                className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs"
+                style={{
+                  color: location.pathname.includes(p.id) ? '#d9dff0' : '#7c85a2',
+                  background: location.pathname.includes(p.id) ? 'rgba(255,255,255,0.07)' : 'transparent'
+                }}
+                onClick={() => { toggleProject(p.id); navigate('/dashboard/projects/' + p.id); }}
+              >
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
                 <span className="truncate flex-1 text-left">{p.name}</span>
                 {expandedProjects[p.id] ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
               </button>
               {expandedProjects[p.id] && (
                 <div className="ml-4 mt-0.5 space-y-0.5">
-                  {['Issues', 'Board', 'Reports'].map(sub => (
-                    <button key={sub} className="w-full text-left px-2 py-0.5 rounded text-xs" style={{ color: '#484f6b' }}>{sub}</button>
+                  {[{ label: 'Issues', path: `/dashboard/projects/${p.id}?view=issues` }, { label: 'Board', path: `/dashboard/projects/${p.id}?view=board` }, { label: 'Sprints', path: `/dashboard/projects/${p.id}/sprints` }, { label: 'Reports', path: `/dashboard/projects/${p.id}?view=reports` }].map(sub => (
+                    <button
+                      key={sub.label}
+                      className="w-full text-left px-2 py-0.5 rounded text-xs"
+                      style={{ color: location.pathname.includes(sub.path.split('?')[0]) && location.pathname !== '/projects/' + p.id ? '#FB923C' : '#484f6b' }}
+                      onClick={() => navigate(sub.path)}
+                    >
+                      {sub.label}
+                    </button>
                   ))}
                 </div>
               )}
@@ -131,15 +152,27 @@ export function Sidebar() {
       )}
 
       {/* User */}
-      <div className="flex items-center gap-2 mx-2 mb-2 px-2 py-2 rounded-md cursor-pointer" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10, marginTop: 4 }}>
-        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: '#5c6ef8', color: '#fff' }}>{currentUser.avatar}</div>
+      <div
+        className="flex items-center gap-2 mx-2 mb-2 px-2 py-2 rounded-md cursor-pointer"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10, marginTop: 4 }}
+        onClick={() => !collapsed && navigate('/dashboard/settings')}
+      >
+        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0" style={{ background: '#FB923C', color: '#fff' }}>{avatar}</div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium truncate" style={{ color: '#d9dff0' }}>{currentUser.name}</div>
-            <div className="text-xs capitalize" style={{ color: roleColors[currentUser.role] }}>{currentUser.role}</div>
+            <div className="text-xs font-medium truncate" style={{ color: '#d9dff0' }}>{profile?.name || 'Loading...'}</div>
+            <div className="text-xs capitalize" style={{ color: roleColors[profile?.role || ''] || '#7c85a2' }}>{profile?.role || ''}</div>
           </div>
         )}
-        {!collapsed && <LogOut size={13} color="#484f6b" />}
+        {!collapsed && (
+          <button
+            onClick={(e) => { e.stopPropagation(); signOut(); navigate('/'); }}
+            style={{ color: '#484f6b', background: 'none', border: 'none', padding: 4, cursor: 'pointer' }}
+            title="Logout"
+          >
+            <LogOut size={13} />
+          </button>
+        )}
       </div>
     </aside>
   );
@@ -150,9 +183,9 @@ function NavItem({ icon: Icon, label, collapsed, active, onClick }: { icon: any;
   return (
     <button onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors"
-      style={{ color: active ? '#d9dff0' : hovered ? '#a0a8c0' : '#7c85a2', background: active ? 'rgba(92,110,248,0.12)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent', justifyContent: collapsed ? 'center' : 'flex-start' }}
+      style={{ color: active ? '#d9dff0' : hovered ? '#a0a8c0' : '#7c85a2', background: active ? 'rgba(251,146,60,0.12)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent', justifyContent: collapsed ? 'center' : 'flex-start' }}
       title={collapsed ? label : undefined}>
-      <Icon size={15} color={active ? '#5c6ef8' : hovered ? '#a0a8c0' : '#7c85a2'} />
+      <Icon size={15} color={active ? '#FB923C' : hovered ? '#a0a8c0' : '#7c85a2'} />
       {!collapsed && <span className="flex-1 text-left font-medium">{label}</span>}
     </button>
   );

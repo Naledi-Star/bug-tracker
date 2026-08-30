@@ -1,23 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Paperclip, ChevronDown } from 'lucide-react';
-import { projects, members } from '../data/mockData';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 interface CreateBugModalProps {
   onClose: () => void;
+  onCreated?: (bugId: string) => void;
 }
 
 const priorities = ['low', 'medium', 'high', 'critical'];
-const severities = ['minor', 'major', 'severe', 'blocker'];
+const severities = ['low', 'medium', 'high', 'blocker'];
 const labelOptions = ['UI', 'Backend', 'Frontend', 'Authentication', 'Payment', 'Performance', 'Mobile', 'i18n', 'Email', 'Export', 'Finance', 'Search'];
 
 const priorityColors: Record<string, string> = {
   low: '#3dd68c', medium: '#e5a435', high: '#f09858', critical: '#f75f6b',
 };
 const severityColors: Record<string, string> = {
-  minor: '#7c85a2', major: '#e5a435', severe: '#f09858', blocker: '#f75f6b',
+  low: '#3dd68c', medium: '#e5a435', high: '#f09858', blocker: '#f75f6b',
 };
 
-export default function CreateBugModal({ onClose }: CreateBugModalProps) {
+export default function CreateBugModal({ onClose, onCreated }: CreateBugModalProps) {
+  const { profile } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState('');
@@ -25,16 +28,80 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
   const [actual, setActual] = useState('');
   const [project, setProject] = useState('');
   const [priority, setPriority] = useState('medium');
-  const [severity, setSeverity] = useState('major');
+  const [severity, setSeverity] = useState('medium');
   const [assignee, setAssignee] = useState('');
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [device, setDevice] = useState('');
-  const [os, setOs] = useState('');
-  const [browser, setBrowser] = useState('');
-  const [version, setVersion] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const [projects, setProjects] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!profile?.company_id) return;
+
+    const fetchData = async () => {
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('id, name')
+        .eq('company_id', profile.company_id)
+        .eq('status', 'active');
+
+      const { data: memberData } = await supabase
+        .from('profiles')
+        .select('id, name, avatar, role')
+        .eq('company_id', profile.company_id);
+
+      setProjects(projectData || []);
+      setTeamMembers(memberData || []);
+    };
+
+    fetchData();
+  }, [profile?.company_id]);
 
   const toggleLabel = (l: string) => {
     setSelectedLabels(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim() || !project || !profile?.id || saving) return;
+
+    setSaving(true);
+
+    const { data: bug, error } = await supabase
+      .from('bugs')
+      .insert({
+        title: title.trim(),
+        description: description.trim(),
+        steps_to_reproduce: steps.trim(),
+        expected_behavior: expected.trim(),
+        actual_behavior: actual.trim(),
+        project_id: project,
+        priority,
+        severity,
+        status: 'open',
+        reporter_id: profile.id,
+        assignee_id: assignee || null,
+        labels: selectedLabels,
+        due_date: dueDate || null,
+      })
+      .select()
+      .single();
+
+    if (!error && bug) {
+      // Log activity
+      await supabase.from('bug_activity').insert({
+        bug_id: bug.id,
+        actor_id: profile.id,
+        action: 'created',
+        detail: `Created bug "${title.trim()}"`,
+      });
+
+      onCreated?.(bug.id);
+      onClose();
+    }
+
+    setSaving(false);
   };
 
   return (
@@ -61,7 +128,7 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
               placeholder="Short, descriptive title..."
               className="w-full px-3 py-2 rounded-md text-sm outline-none transition-colors"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d9dff0' }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(92,110,248,0.5)')}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
             />
           </FormField>
@@ -120,7 +187,7 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
               rows={3}
               className="w-full px-3 py-2 rounded-md text-sm outline-none resize-none transition-colors"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d9dff0' }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(92,110,248,0.5)')}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
             />
           </FormField>
@@ -130,11 +197,11 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
             <textarea
               value={steps}
               onChange={e => setSteps(e.target.value)}
-              placeholder="1. Navigate to...&#10;2. Click on...&#10;3. Observe..."
+              placeholder={"1. Navigate to...\n2. Click on...\n3. Observe..."}
               rows={3}
-              className="w-full px-3 py-2 rounded-md text-sm outline-none resize-none transition-colors font-mono"
+              className="w-full px-3 py-2 rounded-md text-sm outline-none resize-none transition-colors"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d9dff0', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(92,110,248,0.5)')}
+              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.5)')}
               onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
             />
           </FormField>
@@ -166,38 +233,25 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
             </FormField>
           </div>
 
-          {/* Environment */}
-          <div>
-            <span className="text-xs font-medium mb-2 block" style={{ color: '#7c85a2' }}>Environment</span>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Device', value: device, setter: setDevice, placeholder: 'Desktop, iPhone 15...' },
-                { label: 'OS', value: os, setter: setOs, placeholder: 'Windows 11, iOS 17...' },
-                { label: 'Browser', value: browser, setter: setBrowser, placeholder: 'Chrome 126, Safari...' },
-                { label: 'App Version', value: version, setter: setVersion, placeholder: '3.4.1' },
-              ].map(f => (
-                <input
-                  key={f.label}
-                  value={f.value}
-                  onChange={e => f.setter(e.target.value)}
-                  placeholder={f.placeholder}
-                  className="px-3 py-2 rounded-md text-xs outline-none transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d9dff0' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'rgba(92,110,248,0.5)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
-                />
-              ))}
-            </div>
+          {/* Assignee + Due Date */}
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Assignee">
+              <Select value={assignee} onChange={setAssignee} placeholder="Select assignee">
+                {teamMembers.map(m => (
+                  <option key={m.id} value={m.id} style={{ background: '#141826' }}>{m.name} ({m.role})</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Due Date">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+                className="w-full px-3 py-2 rounded-md text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d9dff0' }}
+              />
+            </FormField>
           </div>
-
-          {/* Assignee */}
-          <FormField label="Assignee">
-            <Select value={assignee} onChange={setAssignee} placeholder="Select assignee">
-              {members.filter(m => m.role !== 'manager').map(m => (
-                <option key={m.id} value={m.id} style={{ background: '#141826' }}>{m.name} ({m.role})</option>
-              ))}
-            </Select>
-          </FormField>
 
           {/* Labels */}
           <FormField label="Labels">
@@ -208,9 +262,9 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
                   onClick={() => toggleLabel(l)}
                   className="px-2 py-0.5 rounded text-xs transition-all"
                   style={{
-                    background: selectedLabels.includes(l) ? 'rgba(92,110,248,0.2)' : 'rgba(255,255,255,0.05)',
-                    color: selectedLabels.includes(l) ? '#5c6ef8' : '#7c85a2',
-                    border: `1px solid ${selectedLabels.includes(l) ? 'rgba(92,110,248,0.4)' : 'transparent'}`,
+                    background: selectedLabels.includes(l) ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.05)',
+                    color: selectedLabels.includes(l) ? '#FB923C' : '#7c85a2',
+                    border: `1px solid ${selectedLabels.includes(l) ? 'rgba(251,146,60,0.4)' : 'transparent'}`,
                   }}
                 >
                   {l}
@@ -224,7 +278,7 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
             <button
               className="flex items-center gap-2 px-3 py-2 rounded-md text-xs w-full transition-colors"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.12)', color: '#484f6b' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(92,110,248,0.4)')}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(251,146,60,0.4)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
             >
               <Paperclip size={13} />
@@ -245,13 +299,16 @@ export default function CreateBugModal({ onClose }: CreateBugModalProps) {
             Cancel
           </button>
           <button
-            onClick={onClose}
+            onClick={handleSubmit}
+            disabled={!title.trim() || !project || saving}
             className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            style={{ background: '#5c6ef8', color: '#fff' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#6e7ff9')}
-            onMouseLeave={e => (e.currentTarget.style.background = '#5c6ef8')}
+            style={{
+              background: title.trim() && project && !saving ? '#FB923C' : 'rgba(255,255,255,0.06)',
+              color: title.trim() && project && !saving ? '#fff' : '#484f6b',
+              cursor: title.trim() && project && !saving ? 'pointer' : 'default',
+            }}
           >
-            Create Bug
+            {saving ? 'Creating...' : 'Create Bug'}
           </button>
         </div>
       </div>

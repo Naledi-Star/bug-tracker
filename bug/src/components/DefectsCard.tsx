@@ -38,7 +38,7 @@ export const DefectsCard: React.FC<DefectsCardProps> = ({
           {displayedDefects.map((defect) => (
             <div
               key={defect.id}
-              onClick={() => navigate(`/defects/${defect.id}`)}
+              onClick={() => navigate(`/dashboard/defects/${defect.id}`)}
               className="defect-item"
             >
               <div className="defect-info">
